@@ -7,26 +7,40 @@ import MDEditor from "@uiw/react-md-editor";
 import { Button } from "./ui/button";
 import { Send } from "lucide-react";
 import { title } from "process";
+import { formSchema } from "@/lib/validation";
+import { z } from "zod";
+import { useRouter } from "next/navigation";
+import { createPitch } from "@/lib/actions";
 
 const StartupForm = () => {
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [pitch, setPitch] = useState("");
-  const handleFormSubmit = (prevState: any, formData: FormData) => {
-    try {
-      const formvalues ={
-        title: formData.get("title") as string,
-        description: formData.get("description") as string,
-        category: formData.get("category") as string,
-        link: formData.get("link") as string,
-        pitch,
-      }
+  const router = useRouter();
 
+  const handleFormSubmit = async (prevState: any, formData: FormData) => {
+    const formValues = {
+      title: formData.get("title") as string,
+      description: formData.get("description") as string,
+      category: formData.get("category") as string,
+      link: formData.get("link") as string,
+      pitch,
+    };
+    try {
+      await formSchema.parseAsync(formValues);
+
+      const result = await createPitch(prevState, formData, pitch);
+      if (result.status == "SUCCESS") {
+        console.log("Success");
+        router.push(`/startup/${result._id}`);
       }
+      return result;
     } catch (error) {
-      
-    }
-    finally {
-      
+      if (error instanceof z.ZodError) {
+        const fieldErorrs = error.flatten().fieldErrors;
+        setErrors(fieldErorrs as unknown as Record<string, string>);
+        return { ...prevState, error: "Validation Error", status: "ERROR" };
+      }
+      return { ...prevState, error: "Something went wrong", status: "ERROR" };
     }
   };
   const [state, formAction, isPending] = useActionState(handleFormSubmit, {
@@ -35,7 +49,7 @@ const StartupForm = () => {
   });
 
   return (
-    <form action={() => {}} className="startup-form">
+    <form action={formAction} className="startup-form">
       <div>
         <label htmlFor="title" className="startup-form_label">
           Title

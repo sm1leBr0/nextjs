@@ -1,23 +1,22 @@
-import { clsx, type ClassValue } from "clsx"
-import { twMerge } from "tailwind-merge"
+import { clsx, type ClassValue } from "clsx";
+import { twMerge } from "tailwind-merge";
 
-export function cn(...inputs: ClassValue[])
-{
-  return twMerge(clsx(inputs))
+export function cn(...inputs: ClassValue[]) {
+  return twMerge(clsx(inputs));
 }
 
-
-
-export function formatDate(date: string)
-{
-  return new Date(date).toLocaleDateString('en-US', {
+export function formatDate(date: string) {
+  return new Date(date).toLocaleDateString("en-US", {
     month: "long",
     day: "numeric",
     year: "numeric",
-  })
+  });
 }
 
-export function formatNumber(num: number)
-{
+export function formatNumber(num: number) {
   return num == 1 ? `View: ${num}` : `Views: ${num}`;
+}
+
+export function pasreServerActionResponse<T>(response: T) {
+  return JSON.parse(JSON.stringify(response));
 }
